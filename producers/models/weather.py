@@ -23,7 +23,7 @@ class Weather(Producer):
 
     rest_proxy_url = "http://localhost:8082"
 
-    key_schema = None
+    key_schema =  None
     value_schema = None
 
     winter_months = set((0, 1, 2, 3, 10, 11))
@@ -40,6 +40,8 @@ class Weather(Producer):
             "weather", # TODO: Come up with a better topic name
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
+            num_partitions=5,  
+          num_replicas=1,    
         )
 
         self.status = Weather.status.sunny
@@ -104,6 +106,22 @@ class Weather(Producer):
         #    ),
         #)
         #resp.raise_for_status()
+        requests.post(
+            f"{Weather.rest_proxy_url}/topics/weather",
+            headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
+            data=json.dumps(
+                {
+                    "key_schema": json.dumps(Weather.key_schema),
+                    "value_schema": json.dumps(Weather.value_schema),
+                    "records": [
+                        {
+                            "key": {"timestamp": self.time_millis()},
+                            "value": {"temperature": self.temp, "status": self.status.name},
+                        }
+                    ],
+                }
+            ),
+        )
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",
