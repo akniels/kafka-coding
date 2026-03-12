@@ -35,7 +35,7 @@ app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memor
 # TODO: Define the input Kafka Topic. Hint: What topic did Kafka Connect output to?
 topic = app.topic("com.udacity.journey.stations", value_type=Station)
 # TODO: Define the output Kafka Topic
-out_topic = app.topic("com.udacity.journey.stations.transformed", partitions=1)
+out_topic = app.topic("org.chicago.cta.stations.table.v1", partitions=1)
 # TODO: Define a Faust Table
 table = app.Table(
    # "TODO",
@@ -66,13 +66,14 @@ def get_line(station):
         return "unknown"
 
 
-async def transform_station(station):
+@app.agent(topic)
+async def transform_station(stations):
     async for station in stations:
         transformed = TransformedStation(
             station_id=station.station_id,
             station_name=station.station_name,
             order=station.order,
-            line=get_line(station)
+            line=get_line(station),
         )
         table[transformed.station_id] = transformed
         await out_topic.send(value=transformed)

@@ -65,7 +65,7 @@ class Producer:
         #
         #
         #Getting the admin client to get the bootstrap server from the Porducer configuration
-        client = AdminClient({"bootstrap.servers": self.broker_properties[:"bootstrap.servers"]})
+        client = AdminClient({"bootstrap.servers": self.broker_properties["bootstrap.servers"]})
         if self.topic_name not in client.list_topics().topics:
             futures = client.create_topics(
                 [
@@ -76,13 +76,12 @@ class Producer:
                     )
                 ]
             )
-            for topic, new in new.items():
+            for topic, future in futures.items():
                 try:
-                    new.result()
+                    future.result()
                     logger.info(f"topic {self.topic_name} created")
                 except Exception as e:
                     logger.info(f"failed to create topic {self.topic_name}: {e}")
-        logger.info("topic creation kafka integration incomplete - skipping")
 
     def time_millis(self):
         return int(round(time.time() * 1000))
@@ -95,7 +94,6 @@ class Producer:
         #
         #
         self.producer.flush()
-        logger.info("producer close incomplete - skipping")
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""

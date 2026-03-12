@@ -16,7 +16,7 @@ class Weather:
     def process_message(self, message):
         """Handles incoming weather data"""
         value = message.value()
-        self.temperature = value.get("temp")
+        self.temperature = value.get("temperature")
         self.status = value.get("status")
         #
         #

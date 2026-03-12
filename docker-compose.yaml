@@ -7,8 +7,6 @@
 # * Kafka Connect
 #
 
-version: '3.7'
-
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:5.2.2
@@ -82,7 +80,7 @@ services:
     - "schema-registry"
 
   ksql:
-    image: confluentinc/cp-ksql-server:5.2.2
+    image: confluentinc/ksqldb-server:0.28.2
     ports:
     - "8088:8088"
     environment:
