@@ -38,9 +38,8 @@ class Producer:
         #
         #
         self.broker_properties = {
-            # TODO
-            # TODO
-            # TODO
+             "bootstrap.servers": "PLAINTEXT://localhost:9092",
+            "schema.registry.url": "http://localhost:8081",
         }
 
         # If the topic does not already exist, try to create it
@@ -51,6 +50,11 @@ class Producer:
         # TODO: Configure the AvroProducer
         # self.producer = AvroProducer(
         # )
+        self.producer = AvroProducer(
+            self.broker_properties,
+            default_key_schema=self.key_schema,
+            default_value_schema=self.value_schema,
+        )
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
@@ -60,7 +64,24 @@ class Producer:
         # the Kafka Broker.
         #
         #
-        logger.info("topic creation kafka integration incomplete - skipping")
+        #Getting the admin client to get the bootstrap server from the Porducer configuration
+        client = AdminClient({"bootstrap.servers": self.broker_properties["bootstrap.servers"]})
+        if self.topic_name not in client.list_topics().topics:
+            created_topic = client.create_topics(
+                [
+                    NewTopic(
+                        topic=self.topic_name,
+                        num_partitions=self.num_partitions,
+                        replication_factor=self.num_replicas,
+                    )
+                ]
+            )
+            for topic, ct in created_topic.items():
+                try:
+                    ct.result()
+                    logger.info(f"topic {self.topic_name} created")
+                except Exception as e:
+                    logger.info(f"failed to create topic {self.topic_name}: {e}")
 
     def time_millis(self):
         return int(round(time.time() * 1000))
@@ -72,7 +93,7 @@ class Producer:
         # TODO: Write cleanup code for the Producer here
         #
         #
-        logger.info("producer close incomplete - skipping")
+        self.producer.flush()
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""
