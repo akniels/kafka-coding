@@ -67,7 +67,7 @@ class Producer:
         #Getting the admin client to get the bootstrap server from the Porducer configuration
         client = AdminClient({"bootstrap.servers": self.broker_properties["bootstrap.servers"]})
         if self.topic_name not in client.list_topics().topics:
-            futures = client.create_topics(
+            created_topic = client.create_topics(
                 [
                     NewTopic(
                         topic=self.topic_name,
@@ -76,9 +76,9 @@ class Producer:
                     )
                 ]
             )
-            for topic, future in futures.items():
+            for topic, ct in created_topic.items():
                 try:
-                    future.result()
+                    ct.result()
                     logger.info(f"topic {self.topic_name} created")
                 except Exception as e:
                     logger.info(f"failed to create topic {self.topic_name}: {e}")
